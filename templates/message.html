@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+</head>
+<body>
+    <h1>Send a Message</h1>
+    <form id="messageForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="text" id="message" placeholder="Message" required>
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const message = document.getElementById('message').value;
+
+            fetch('/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username, message: message }),
+            }).then(response => response.text()).then(data => {
+                alert(data);
+            });
+        });
+    </script>
+</body>
+</html>
