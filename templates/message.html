@@ -7,10 +7,16 @@
 <body>
     <h1>Send a Message</h1>
     <form id="messageForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="text" id="message" placeholder="Message" required>
+        <div>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="text" id="message" placeholder="Message" required>
+        </div>
         <button type="submit">Send</button>
     </form>
+    <div id="messages">
+        <h2>Messages</h2>
+        <ul id="messageList"></ul>
+    </div>
 
     <script>
         document.getElementById('messageForm').addEventListener('submit', function (e) {
@@ -26,8 +32,27 @@
                 body: JSON.stringify({ username: username, message: message }),
             }).then(response => response.text()).then(data => {
                 alert(data);
+                document.getElementById('username').value = '';
+                document.getElementById('message').value = '';
+                loadMessages();
             });
         });
+
+        function loadMessages() {
+            fetch('/messages')
+                .then(response => response.json())
+                .then(data => {
+                    const messageList = document.getElementById('messageList');
+                    messageList.innerHTML = '';
+                    data.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${msg.date}</span> <strong>${msg.username}:</strong> ${msg.message}`;
+                        messageList.appendChild(li);
+                    });
+                });
+        }
+
+        window.onload = loadMessages;
     </script>
 </body>
 </html>

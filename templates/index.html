@@ -1,11 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Index</title>
+    <title>Message</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
 </head>
 <body>
-    <h1>Welcome to the Web Application</h1>
-    <a href="/message.html">Go to Message Page</a>
+    <h1>Send a Message</h1>
+    <form id="messageForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="text" id="message" placeholder="Message" required>
+        <button type="submit">Send</button>
+    </form>
+    <div id="messages">
+        <h2>Messages</h2>
+        <ul id="messageList"></ul>
+    </div>
+
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const message = document.getElementById('message').value;
+
+            fetch('/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username, message: message }),
+            }).then(response => response.text()).then(data => {
+                alert(data);
+                document.getElementById('username').value = '';
+                document.getElementById('message').value = '';
+                loadMessages();
+            });
+        });
+
+        function loadMessages() {
+            fetch('/messages')
+                .then(response => response.json())
+                .then(data => {
+                    const messageList = document.getElementById('messageList');
+                    messageList.innerHTML = '';
+                    data.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${msg.date}</span> <strong>${msg.username}:</strong> ${msg.message}`;
+                        messageList.appendChild(li);
+                    });
+                });
+        }
+
+        window.onload = loadMessages;
+    </script>
 </body>
 </html>

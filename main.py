@@ -19,12 +19,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.path = '/templates/index.html'
         elif self.path == '/message.html':
             self.path = '/templates/message.html'
+        elif self.path == '/messages':
+            self.handle_get_messages()
+            return
         elif self.path.startswith('/static/'):
             self.path = self.path[1:]  # Видаляємо провідний слеш
 
         if os.path.exists(self.path[1:]):
             self.send_response(200)
-            mime_type, _ = mimetypes.guess_type(self.path)
+            mime_type, _ = mimetypes.guess_type(self.path[1:])
             if mime_type:
                 self.send_header('Content-type', mime_type)
             self.end_headers()
@@ -36,6 +39,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             with open('templates/error.html', 'rb') as file:
                 self.wfile.write(file.read())
+
+    def handle_get_messages(self):
+        messages = list(collection.find({}, {"_id": 0}).sort("date", -1))
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(messages).encode('utf-8'))
 
     def do_POST(self):
         if self.path == '/send':
