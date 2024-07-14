@@ -7,27 +7,26 @@ import threading
 import json
 import pymongo
 
-# Налаштування бази даних MongoDB
+# Database setup
 client = pymongo.MongoClient("mongodb://mongo:27017/")
 db = client["messages_db"]
 collection = db["messages"]
 
-# HTTP-сервер
+# HTTP Server
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
             self.path = '/templates/index.html'
         elif self.path == '/message.html':
             self.path = '/templates/message.html'
-        elif self.path == '/messages':
-            self.handle_get_messages()
-            return
         elif self.path.startswith('/static/'):
-            self.path = self.path[1:]  # Видаляємо провідний слеш
+            self.path = '.' + self.path  # Correct path to static files
+        else:
+            self.path = '/templates' + self.path
 
         if os.path.exists(self.path[1:]):
             self.send_response(200)
-            mime_type, _ = mimetypes.guess_type(self.path[1:])
+            mime_type, _ = mimetypes.guess_type(self.path)
             if mime_type:
                 self.send_header('Content-type', mime_type)
             self.end_headers()
@@ -53,7 +52,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             message = json.loads(post_data)
 
-            # Відправка даних на Socket-сервер
+            # Send data to Socket server
             send_to_socket_server(message)
 
             self.send_response(200)
